@@ -58,6 +58,36 @@ After adjusting the hostname, make sure to adjust your DNS records to point the 
 
 **Note**: hosting Redlib under a subpath (by configuring the `redlib_path_prefix` variable) does not seem to be possible due to Redlib's technical limitations.
 
+### Configure instance and user settings (optional)
+
+There are various options for the instance and user settings.
+
+For example, if you want to enable SFW-only mode for the instance, add the following configuration to your `vars.yml` file.
+
+```yaml
+redlib_environment_variables_redlib_sfw_only: on
+```
+
+If you want to set the default theme for users, add and adjust the following configuration to your `vars.yml` file:
+
+```yaml
+# Valid values: system, light, dark, black, dracula, nord, laserwave, violet, gold, rosebox, gruvboxdark, gruvboxlight
+redlib_environment_variables_redlib_default_theme: system
+```
+
+To change the default front page for users, add and adjust the following configuration to your `vars.yml` file:
+
+```yaml
+# Valid values: default, popular, all
+redlib_environment_variables_redlib_default_front_page: default
+```
+
+To enable blurring NSFW content by default for users, add the following configuration to your `vars.yml` file:
+
+```yaml
+redlib_environment_variables_redlib_default_blur_nsfw: on
+```
+
 ### Extending the configuration
 
 There are some additional things you may wish to configure about the component.
@@ -66,7 +96,7 @@ Take a look at:
 
 - [`defaults/main.yml`](../defaults/main.yml) for some variables that you can customize via your `vars.yml` file. You can override settings (even those that don't have dedicated playbook variables) using the `redlib_environment_variables_additional_variables` variable
 
-For a complete list of Redlib's config options that you could put in `redlib_environment_variables_additional_variables`, see its [`docker-compose.example.yml`](https://github.com/httpjamesm/Redlib/blob/main/docker-compose.example.yml).
+See [`.env.example`](https://github.com/redlib-org/redlib/blob/main/.env.example) for a complete list of Redlib's config options that you could put in `redlib_environment_variables_additional_variables`.
 
 ## Installing
 
