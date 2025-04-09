@@ -35,15 +35,15 @@ To enable Redlib with this role, add the following configuration to your `vars.y
 ```yaml
 ########################################################################
 #                                                                      #
-# anonymousoverflow                                                    #
+# redlib                                                               #
 #                                                                      #
 ########################################################################
 
-anonymousoverflow_enabled: true
+redlib_enabled: true
 
 ########################################################################
 #                                                                      #
-# /anonymousoverflow                                                   #
+# /redlib                                                              #
 #                                                                      #
 ########################################################################
 ```
@@ -53,12 +53,12 @@ anonymousoverflow_enabled: true
 To enable Redlib you need to set the hostname as well. To do so, add the following configuration to your `vars.yml` file. Make sure to replace `example.com` with your own value.
 
 ```yaml
-anonymousoverflow_hostname: "example.com"
+redlib_hostname: "example.com"
 ```
 
 After adjusting the hostname, make sure to adjust your DNS records to point the domain to your server.
 
-**Note**: hosting Redlib under a subpath (by configuring the `anonymousoverflow_path_prefix` variable) does not seem to be possible due to Redlib's technical limitations.
+**Note**: hosting Redlib under a subpath (by configuring the `redlib_path_prefix` variable) does not seem to be possible due to Redlib's technical limitations.
 
 ### Extending the configuration
 
@@ -66,9 +66,9 @@ There are some additional things you may wish to configure about the component.
 
 Take a look at:
 
-- [`defaults/main.yml`](../defaults/main.yml) for some variables that you can customize via your `vars.yml` file. You can override settings (even those that don't have dedicated playbook variables) using the `anonymousoverflow_environment_variables_additional_variables` variable
+- [`defaults/main.yml`](../defaults/main.yml) for some variables that you can customize via your `vars.yml` file. You can override settings (even those that don't have dedicated playbook variables) using the `redlib_environment_variables_additional_variables` variable
 
-For a complete list of Redlib's config options that you could put in `anonymousoverflow_environment_variables_additional_variables`, see its [`docker-compose.example.yml`](https://github.com/httpjamesm/Redlib/blob/main/docker-compose.example.yml).
+For a complete list of Redlib's config options that you could put in `redlib_environment_variables_additional_variables`, see its [`docker-compose.example.yml`](https://github.com/httpjamesm/Redlib/blob/main/docker-compose.example.yml).
 
 ## Installing
 
@@ -84,7 +84,7 @@ If you use the MASH playbook, the shortcut commands with the [`just` program](ht
 
 After running the command for installation, Redlib becomes available at the specified hostname like `https://example.com`.
 
-[Libredirect](https://libredirect.github.io/), an extension for Firefox and Chromium-based desktop browsers, has support for redirections to Redlib. See [this section](https://github.com/httpjamesm/Redlib/blob/main/README.md#how-to-make-stack-overflow-links-take-you-to-anonymousoverflow-automatically) on the official documentation for more information.
+[Libredirect](https://libredirect.github.io/), an extension for Firefox and Chromium-based desktop browsers, has support for redirections to Redlib. See [this section](https://github.com/httpjamesm/Redlib/blob/main/README.md#how-to-make-stack-overflow-links-take-you-to-redlib-automatically) on the official documentation for more information.
 
 If you would like to publish your instance so that it can be used by anyone including Libredirect, please consider to send a PR to the [upstream project](https://github.com/httpjamesm/Redlib) to add yours to [`instances.json`](https://github.com/httpjamesm/Redlib/blob/main/instances.json), which Libredirect automatically fetches using a script (see [this FAQ entry](https://libredirect.github.io/faq.html#where_the_hell_are_those_instances_coming_from)).
 
@@ -92,4 +92,4 @@ If you would like to publish your instance so that it can be used by anyone incl
 
 ### Check the service's logs
 
-You can find the logs in [systemd-journald](https://www.freedesktop.org/software/systemd/man/systemd-journald.service.html) by logging in to the server with SSH and running `journalctl -fu anonymousoverflow` (or how you/your playbook named the service, e.g. `mash-anonymousoverflow`).
+You can find the logs in [systemd-journald](https://www.freedesktop.org/software/systemd/man/systemd-journald.service.html) by logging in to the server with SSH and running `journalctl -fu redlib` (or how you/your playbook named the service, e.g. `mash-redlib`).

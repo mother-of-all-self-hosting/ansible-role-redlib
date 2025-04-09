@@ -7,24 +7,24 @@
 
 - name: Check existence of Redlib systemd service
   ansible.builtin.stat:
-    path: "{{ devture_systemd_docker_base_systemd_path }}/{{ anonymousoverflow_identifier }}.service"
-  register: anonymousoverflow_service_stat
+    path: "{{ devture_systemd_docker_base_systemd_path }}/{{ redlib_identifier }}.service"
+  register: redlib_service_stat
 
-- when: anonymousoverflow_service_stat.stat.exists | bool
+- when: redlib_service_stat.stat.exists | bool
   block:
     - name: Ensure Redlib systemd service is stopped
       ansible.builtin.service:
-        name: "{{ anonymousoverflow_identifier }}"
+        name: "{{ redlib_identifier }}"
         state: stopped
         enabled: false
         daemon_reload: true
 
     - name: Ensure Redlib systemd service doesn't exist
       ansible.builtin.file:
-        path: "{{ devture_systemd_docker_base_systemd_path }}/{{ anonymousoverflow_identifier }}.service"
+        path: "{{ devture_systemd_docker_base_systemd_path }}/{{ redlib_identifier }}.service"
         state: absent
 
     - name: Ensure Redlib base directory doesn't exist
       ansible.builtin.file:
-        path: "{{ anonymousoverflow_base_path }}"
+        path: "{{ redlib_base_path }}"
         state: absent

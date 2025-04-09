@@ -6,21 +6,21 @@
 ---
 
 - block:
-    - when: anonymousoverflow_enabled | bool
+    - when: redlib_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
 
-    - when: anonymousoverflow_enabled | bool
+    - when: redlib_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
 
   tags:
     - setup-all
-    - setup-anonymousoverflow
+    - setup-redlib
     - install-all
-    - install-anonymousoverflow
+    - install-redlib
 
 - block:
-    - when: not anonymousoverflow_enabled | bool
+    - when: not redlib_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
   tags:
     - setup-all
-    - setup-anonymousoverflow
+    - setup-redlib
