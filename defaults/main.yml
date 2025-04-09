@@ -7,15 +7,15 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-# Project source code URL: https://github.com/httpjamesm/Redlib
+# Project source code URL: https://github.com/redlib-org/redlib
 
 redlib_enabled: true
 
 redlib_identifier: redlib
 redlib_base_path: "{{ redlib_identifier }}"
 
-# Only "release" tag is available
-redlib_version: release
+# Only "latest" tag is available
+redlib_version: latest
 
 redlib_uid: ''
 redlib_gid: ''
@@ -33,15 +33,11 @@ redlib_hostname: ''
 # technical limitations.
 redlib_path_prefix: /
 
-# Public facing base URL of the Redlib service.
-# It should not end with a slash.
-redlib_base_url: "{{ redlib_scheme }}://{{ redlib_hostname }}{{ '' if redlib_path_prefix == '/' else redlib_path_prefix }}"
-
-redlib_container_image: "{{ redlib_container_image_registry_prefix }}httpjamesm/redlib:{{ redlib_container_image_tag }}"
+redlib_container_image: "{{ redlib_container_image_registry_prefix }}redlib/redlib:{{ redlib_container_image_tag }}"
 redlib_container_image_tag: "{{ redlib_version }}"
 redlib_container_image_registry_prefix: "{{ redlib_container_image_registry_prefix_upstream }}"
 redlib_container_image_registry_prefix_upstream: "{{ redlib_container_image_registry_prefix_upstream_default }}"
-redlib_container_image_registry_prefix_upstream_default: ghcr.io/
+redlib_container_image_registry_prefix_upstream_default: quay.io/
 redlib_container_image_force_pull: "{{ redlib_container_image.endswith(':latest') }}"
 
 # Controls whether the container exposes its HTTP port (tcp/80 in the container).
@@ -165,9 +161,6 @@ redlib_systemd_required_services_list_custom: []
 
 # List of systemd services that the Redlib systemd service wants
 redlib_systemd_wanted_services_list: []
-
-redlib_environment_variable_app_url: "{{ redlib_base_url }}"
-redlib_environment_variable_jwt_signing_secret: 'secret'
 
 # Additional environment variables.
 redlib_environment_variables_additional_variables: ''

@@ -18,13 +18,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Setting up Redlib
 
-This is an [Ansible](https://www.ansible.com/) role which installs [Redlib](https://github.com/httpjamesm/Redlib) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
+This is an [Ansible](https://www.ansible.com/) role which installs [Redlib](https://github.com/redlib-org/redlib) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
 
-Redlib allows you to view StackOverflow threads without exposing your IP address, browsing habits, and other browser fingerprinting data to the website.
+Redlib allows you to browse Reddit without exposing your IP address, browsing habits, and other browser fingerprinting data to the website.
 
-See the project's [documentation](https://github.com/httpjamesm/Redlib/blob/main/README.md) to learn what Redlib does and why it might be useful to you.
-
-[<img src="assets/home_dark.webp" title="Home screen in dark mode" width="600">](assets/home_dark.webp) [<img src="assets/question_dark.webp" title="Question in dark mode" width="600">](assets/question_dark.webp) [<img src="assets/answers_light.webp" title="Answer in light mode" width="600">](assets/answers_light.webp)
+See the project's [documentation](https://github.com/redlib-org/redlib/blob/main/README.md) to learn what Redlib does and why it might be useful to you.
 
 ## Adjusting the playbook configuration
 
@@ -84,9 +82,9 @@ If you use the MASH playbook, the shortcut commands with the [`just` program](ht
 
 After running the command for installation, Redlib becomes available at the specified hostname like `https://example.com`.
 
-[Libredirect](https://libredirect.github.io/), an extension for Firefox and Chromium-based desktop browsers, has support for redirections to Redlib. See [this section](https://github.com/httpjamesm/Redlib/blob/main/README.md#how-to-make-stack-overflow-links-take-you-to-redlib-automatically) on the official documentation for more information.
+[Libredirect](https://libredirect.github.io/), an extension for Firefox and Chromium-based desktop browsers, has support for redirections to Redlib.
 
-If you would like to publish your instance so that it can be used by anyone including Libredirect, please consider to send a PR to the [upstream project](https://github.com/httpjamesm/Redlib) to add yours to [`instances.json`](https://github.com/httpjamesm/Redlib/blob/main/instances.json), which Libredirect automatically fetches using a script (see [this FAQ entry](https://libredirect.github.io/faq.html#where_the_hell_are_those_instances_coming_from)).
+If you would like to make your instance public so that it can be used by anyone including Libredirect, please consider to send a PR to the [upstream project](https://github.com/redlib-org/redlib-instances) to add yours to the list, which Libredirect automatically fetches using a script (see [this FAQ entry](https://libredirect.github.io/faq.html#where_the_hell_are_those_instances_coming_from)). See [here](https://github.com/redlib-org/redlib-instances/blob/main/README.md) for details about how to do so.
 
 ## Troubleshooting
 

@@ -7,7 +7,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Redlib Ansible role
 
-This is an [Ansible](https://www.ansible.com/) role which installs [Redlib](https://github.com/httpjamesm/Redlib) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
+This is an [Ansible](https://www.ansible.com/) role which installs [Redlib](https://github.com/redlib-org/redlib) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
 
 This role *implicitly* depends on:
 
