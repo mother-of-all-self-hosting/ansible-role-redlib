@@ -21,11 +21,11 @@ redlib_version: latest
 redlib_uid: ''
 redlib_gid: ''
 
-# Specify URI scheme for redlib_base_url.
-redlib_scheme: https
-
 # The hostname at which Redlib is served.
 redlib_hostname: ''
+
+# Specify URI scheme for redlib_base_url.
+redlib_scheme: https
 
 # The path at which Redlib is exposed.
 # This value must either be `/` or not end with a slash (e.g. `/redlib`).
