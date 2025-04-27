@@ -13,7 +13,7 @@
 redlib_enabled: true
 
 redlib_identifier: redlib
-redlib_base_path: "{{ redlib_identifier }}"
+redlib_base_path: "/{{ redlib_identifier }}"
 
 # Only "latest" tag is available
 redlib_version: latest
