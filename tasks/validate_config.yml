@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-
 - name: Fail if required Redlib settings not defined
   ansible.builtin.fail:
     msg: >
@@ -17,7 +16,8 @@
     - redlib_path_prefix
     - redlib_container_network
 
-- when: redlib_container_labels_traefik_enabled | bool
+- name: Run if Traefik is enabled
+  when: redlib_container_labels_traefik_enabled | bool
   block:
     - name: Fail if required Redlib Traefik settings not defined
       ansible.builtin.fail:

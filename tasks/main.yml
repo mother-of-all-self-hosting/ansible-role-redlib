@@ -4,27 +4,25 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-
 - name: Perform Redlib installation tasks
-  block:
-    - name: Validate Redlib configuration
-      when: redlib_enabled | bool
-      ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
-
-    - name: Install Redlib
-      when: redlib_enabled | bool
-      ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
   tags:
     - setup-all
     - setup-redlib
     - install-all
     - install-redlib
+  block:
+    - name: Validate Redlib configuration
+      when: redlib_enabled | bool
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
+    - name: Install Redlib
+      when: redlib_enabled | bool
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
 
 - name: Perform Redlib uninstallation tasks
+  tags:
+    - setup-all
+    - setup-redlib
   block:
     - name: Uninstall Redlib
       when: not redlib_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
-  tags:
-    - setup-all
-    - setup-redlib

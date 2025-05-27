@@ -4,13 +4,13 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-
 - name: Check existence of Redlib systemd service
   ansible.builtin.stat:
     path: "{{ devture_systemd_docker_base_systemd_path }}/{{ redlib_identifier }}.service"
   register: redlib_service_stat
 
-- when: redlib_service_stat.stat.exists | bool
+- name: Uninstall Redlib systemd services and files
+  when: redlib_service_stat.stat.exists | bool
   block:
     - name: Ensure Redlib systemd service is stopped
       ansible.builtin.service:
