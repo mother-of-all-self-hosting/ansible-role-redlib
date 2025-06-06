@@ -5,6 +5,7 @@
 
 ---
 - name: Perform Redlib installation tasks
+  when: redlib_enabled | bool
   tags:
     - setup-all
     - setup-redlib
@@ -12,17 +13,15 @@
     - install-redlib
   block:
     - name: Validate Redlib configuration
-      when: redlib_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
     - name: Install Redlib
-      when: redlib_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
 
 - name: Perform Redlib uninstallation tasks
+  when: not redlib_enabled | bool
   tags:
     - setup-all
     - setup-redlib
   block:
     - name: Uninstall Redlib
-      when: not redlib_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
