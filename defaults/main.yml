@@ -41,6 +41,12 @@ redlib_container_image_registry_prefix_upstream: "{{ redlib_container_image_regi
 redlib_container_image_registry_prefix_upstream_default: quay.io/
 redlib_container_image_force_pull: "{{ redlib_container_image.endswith(':latest') }}"
 
+redlib_container_image_self_build: false
+redlib_container_image_name: "redlib-org/redlib:{{ redlib_container_image_tag }}"
+redlib_container_repo: "https://github.com/redlib-org/redlib.git"
+redlib_container_repo_version: "{{ redlib_version if redlib_version != 'latest' else 'main' }}"
+redlib_container_src_files_path: "{{ redlib_base_path }}/docker-src"
+
 # Controls whether the container exposes its HTTP port (tcp/80 in the container).
 #
 # Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:2586"), or empty string to not expose.
