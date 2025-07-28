@@ -87,6 +87,12 @@ redlib_container_labels_traefik_entrypoints: web-secure
 redlib_container_labels_traefik_tls: "{{ redlib_container_labels_traefik_entrypoints != 'web' }}"
 redlib_container_labels_traefik_tls_certResolver: default  # noqa var-naming
 
+# Controls which additional headers to attach to all HTTP requests.
+# To add your own custom request headers, use `redlib_container_labels_traefik_additional_request_headers_custom`
+redlib_container_labels_traefik_additional_request_headers: "{{ redlib_container_labels_traefik_additional_request_headers_auto | combine(redlib_container_labels_traefik_additional_request_headers_custom) }}"
+redlib_container_labels_traefik_additional_request_headers_auto: {}
+redlib_container_labels_traefik_additional_request_headers_custom: {}
+
 # Controls which additional headers to attach to all HTTP responses.
 # To add your own custom response headers, use `redlib_container_labels_traefik_additional_response_headers_custom`
 redlib_container_labels_traefik_additional_response_headers: "{{ redlib_container_labels_traefik_additional_response_headers_auto | combine(redlib_container_labels_traefik_additional_response_headers_custom) }}"
