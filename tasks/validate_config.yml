@@ -16,6 +16,36 @@
     - redlib_path_prefix
     - redlib_container_network
 
+- name: Fail if Redlib default theme is invalid
+  ansible.builtin.fail:
+    msg: >-
+      redlib_environment_variables_redlib_default_theme must be 'system', 'light', 'dark', 'black', 'dracula', 'nord', 'laserwave', 'violet', 'gold', 'rosebox', 'gruvboxdark', or 'gruvboxlight'
+  when: "redlib_environment_variables_redlib_default_theme not in ['system', 'light', 'dark', 'black', 'dracula', 'nord', 'laserwave', 'violet', 'gold', 'rosebox', 'gruvboxdark', 'gruvboxlight']"
+
+- name: Fail if Redlib default front page is invalid
+  ansible.builtin.fail:
+    msg: >-
+      redlib_environment_variables_redlib_default_front_page must be 'default', 'popular', or 'all'
+  when: "redlib_environment_variables_redlib_default_front_page not in ['default', 'popular', 'all']"
+
+- name: Fail if Redlib default layout is invalid
+  ansible.builtin.fail:
+    msg: >-
+      redlib_environment_variables_redlib_default_layout must be 'card', 'clean', or 'compact'
+  when: "redlib_environment_variables_redlib_default_layout not in ['card', 'clean', 'compact']"
+
+- name: Fail if Redlib default post sort method is invalid
+  ansible.builtin.fail:
+    msg: >-
+      redlib_environment_variables_redlib_default_post_sort must be 'hot', 'new', 'top', 'rising', or 'controversial'
+  when: "redlib_environment_variables_redlib_default_post_sort not in ['hot', 'new', 'top', 'rising', 'controversial']"
+
+- name: Fail if Redlib default comment sort method is invalid
+  ansible.builtin.fail:
+    msg: >-
+      redlib_environment_variables_redlib_default_comment_sort must be 'confidence', 'top', 'new', 'controversial', or 'old'
+  when: "redlib_environment_variables_redlib_default_comment_sort not in ['confidence', 'top', 'new', 'controversial', 'old']"
+
 - name: Run if Traefik is enabled
   when: redlib_container_labels_traefik_enabled | bool
   block:
