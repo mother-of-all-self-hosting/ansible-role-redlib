@@ -18,11 +18,11 @@ redlib_base_path: "/{{ redlib_identifier }}"
 # Only "latest" tag is available
 redlib_version: latest
 
-redlib_uid: ''
-redlib_gid: ''
+redlib_uid: ""
+redlib_gid: ""
 
 # The hostname at which Redlib is served.
-redlib_hostname: ''
+redlib_hostname: ""
 
 # Specify URI scheme for redlib_base_url.
 redlib_scheme: https
@@ -50,7 +50,7 @@ redlib_container_image_self_build_src_files_path: "{{ redlib_base_path }}/docker
 # Controls whether the container exposes its HTTP port (tcp/80 in the container).
 #
 # Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:2586"), or empty string to not expose.
-redlib_container_http_host_bind_port: ''
+redlib_container_http_host_bind_port: ""
 
 # The base container network. It will be auto-created by this role if it doesn't exist already.
 redlib_container_network: "{{ redlib_identifier }}"
@@ -116,7 +116,7 @@ redlib_container_labels_traefik_additional_response_headers_custom: {}
 # redlib_container_labels_additional_labels: |
 #   my.label=1
 #   another.label="here"
-redlib_container_labels_additional_labels: ''
+redlib_container_labels_additional_labels: ""
 
 # A list of extra arguments to pass to the container (`docker run` command)
 redlib_container_extra_arguments: []
@@ -231,4 +231,4 @@ redlib_environment_variables_redlib_default_hide_score: "off"
 redlib_environment_variables_redlib_default_fixed_navbar: "off"
 
 # Additional environment variables.
-redlib_environment_variables_additional_variables: ''
+redlib_environment_variables_additional_variables: ""
