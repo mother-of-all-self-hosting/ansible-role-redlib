@@ -27,7 +27,7 @@ redlib_hostname: ""
 # Specify URI scheme for redlib_base_url.
 redlib_scheme: https
 
-# The path at which Redlib is exposed.
+# The path at which Redlib is served.
 # This value must either be `/` or not end with a slash (e.g. `/redlib`).
 #
 # Hosting Redlib under a subpath does not seem to be possible due to Redlib's
