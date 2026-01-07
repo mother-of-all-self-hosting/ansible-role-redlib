@@ -115,11 +115,11 @@ redlib_container_labels_traefik_additional_response_headers_custom: {}
 #
 # Example:
 # redlib_container_labels_additional_labels_custom: |
-#   my.label=1
-#   another.label="here"
-redlib_container_labels_additional_labels: "{{ redlib_container_labels_additional_labels_auto | combine(redlib_container_labels_additional_labels_custom) }}"
-redlib_container_labels_additional_labels_auto: {}
-redlib_container_labels_additional_labels_custom: {}
+#   - my.label=1
+#   - another.label="here"
+redlib_container_labels_additional_labels: "{{ redlib_container_labels_additional_labels_auto + redlib_container_labels_additional_labels_custom }}"
+redlib_container_labels_additional_labels_auto: []
+redlib_container_labels_additional_labels_custom: []
 
 # A list of extra arguments to pass to the container (`docker create` command)
 redlib_container_extra_arguments: "{{ redlib_container_extra_arguments_auto + redlib_container_extra_arguments_custom }}"
