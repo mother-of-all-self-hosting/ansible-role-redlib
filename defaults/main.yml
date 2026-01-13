@@ -77,7 +77,7 @@ redlib_container_additional_volumes_custom: []
 # redlib_container_labels_traefik_enabled controls whether labels to assist a Traefik reverse-proxy will be attached to the container.
 # See `../templates/labels.j2` for details.
 #
-# To inject your own other container labels, see `redlib_container_labels_additional_labels`.
+# To inject your own other container labels, see `redlib_container_labels_additional_labels_custom`.
 redlib_container_labels_traefik_enabled: true
 redlib_container_labels_traefik_docker_network: "{{ redlib_container_network }}"
 redlib_container_labels_traefik_hostname: "{{ redlib_hostname }}"
