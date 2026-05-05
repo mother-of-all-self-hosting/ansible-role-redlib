@@ -39,7 +39,6 @@ redlib_container_image_tag: "{{ redlib_version }}"
 redlib_container_image_registry_prefix: "{{ redlib_container_image_registry_prefix_upstream }}"
 redlib_container_image_registry_prefix_upstream: "{{ redlib_container_image_registry_prefix_upstream_default }}"
 redlib_container_image_registry_prefix_upstream_default: quay.io/
-redlib_container_image_force_pull: "{{ redlib_container_image.endswith(':latest') }}"
 
 redlib_container_image_self_build: false
 redlib_container_image_self_build_name: "redlib-org/redlib:{{ redlib_container_image_self_build_repo_version }}"
