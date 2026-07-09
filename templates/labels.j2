@@ -14,6 +14,11 @@ traefik.docker.network={{ redlib_container_labels_traefik_docker_network }}
 
 {% set middlewares = [] %}
 
+{% if redlib_container_labels_traefik_middleware_basic_auth_enabled %}
+{% set middlewares = middlewares + [redlib_identifier + '-basic-auth'] %}
+traefik.http.middlewares.{{ redlib_identifier }}-basic-auth.basicauth.users={{ redlib_container_labels_traefik_middleware_basic_auth_users }}
+{% endif %}
+
 {% if redlib_container_labels_traefik_path_prefix != '/' %}
 traefik.http.middlewares.{{ redlib_identifier }}-slashless-redirect.redirectregex.regex=^({{ redlib_container_labels_traefik_path_prefix | quote }})$
 traefik.http.middlewares.{{ redlib_identifier }}-slashless-redirect.redirectregex.replacement=${1}/
