@@ -275,6 +275,11 @@ redlib_environment_variables_redlib_default_use_hls: "off"
 # Hide HLS notification by default
 redlib_environment_variables_redlib_default_hide_hls_notification: "off"
 # Disable autoplay videos by default
+#
+# Note: Redlib lists this in its own `.env.example`, but as of Redlib 0.36.0 it
+# does not read it: the variable is missing from `get_setting_from_config` in
+# its `config.rs`, so the value here has no effect on a running instance. It is
+# kept so that configurations do not break should Redlib start honoring it.
 redlib_environment_variables_redlib_default_autoplay_videos: "off"
 # Define a default list of subreddit subscriptions (format: sub1+sub2+sub3)
 redlib_environment_variables_redlib_default_subscriptions: ""
@@ -289,6 +294,10 @@ redlib_environment_variables_redlib_default_disable_visit_reddit_confirmation: "
 # Hide score by default
 redlib_environment_variables_redlib_default_hide_score: "off"
 # Enable fixed navbar by default
+#
+# Note: as with `redlib_environment_variables_redlib_default_autoplay_videos`
+# above, Redlib 0.36.0 does not read this variable, so the value here has no
+# effect on a running instance.
 redlib_environment_variables_redlib_default_fixed_navbar: "off"
 
 # Additional environment variables.
