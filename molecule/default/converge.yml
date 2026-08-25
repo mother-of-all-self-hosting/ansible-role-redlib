@@ -70,7 +70,17 @@
       ansible.builtin.systemd_service:
         daemon_reload: true
 
+    # `redlib_restart_necessary` is what the role sets when it changed a
+    # configuration file, the unit file or the container image, and acting on it
+    # is what the systemd service manager role does in a real playbook run. It
+    # matters here because Redlib reads its settings once at startup: without
+    # this, a converge onto an already-running instance would leave the old
+    # process in place and the verification would be reading a stale one.
+    #
+    # It stays idempotent - a converge that changes nothing leaves
+    # `redlib_restart_necessary` false, and `started` on a running service is
+    # not a change.
     - name: Ensure Redlib systemd service is started
       ansible.builtin.systemd_service:
         name: redlib.service
-        state: started
+        state: "{{ 'restarted' if redlib_restart_necessary | bool else 'started' }}"
