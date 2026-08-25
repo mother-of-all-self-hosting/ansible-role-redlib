@@ -3,7 +3,7 @@ galaxy_info:
   author: Suguru Hirahara
   company: progressiv
   role_name: redlib
-  namespace: progressiv
+  namespace: mash
   description: Redlib
   platforms:
     - name: Debian
