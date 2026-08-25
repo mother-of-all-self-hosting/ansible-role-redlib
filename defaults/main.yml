@@ -1,5 +1,5 @@
 # SPDX-FileCopyrightText: 2023 - 2024 Nikita Chernyi
-# SPDX-FileCopyrightText: 2023 - 2025 Slavi Pantaleev
+# SPDX-FileCopyrightText: 2023 - 2026 Slavi Pantaleev
 # SPDX-FileCopyrightText: 2024 Redlib project contributors
 # SPDX-FileCopyrightText: 2024 Sergio Durigan Junior
 # SPDX-FileCopyrightText: 2025 MASH project contributors
@@ -15,7 +15,24 @@ redlib_enabled: true
 redlib_identifier: redlib
 redlib_base_path: "/{{ redlib_identifier }}"
 
-# Only "latest" tag is available
+# Redlib has no versions in the sense the rest of the fleet uses the word.
+# github.com/redlib-org/redlib carries git tags, but its release pipeline does
+# not turn them into image tags: quay.io/redlib/redlib is published with
+# `type=sha` and `type=raw,value=latest` only (see the project's
+# `.github/workflows/main-docker.yml`), so the registry carries exactly
+# `latest` and a `sha-<short commit hash>` tag per build. There is no such
+# thing as a Redlib 1.2.3 image, and so no patch release of one.
+#
+# So there is deliberately no `# renovate:` annotation on this variable.
+# Pointing Renovate at those tags would open a pull request for nearly every
+# upstream commit, none of which is a release, and the `patch-automerge`
+# Renovate preset that most of the fleet extends would have nothing to
+# automerge: there are no patch-level bumps for it to tell apart from anything
+# else.
+#
+# It is also why this role's own tags are named `v2025.4.9-<release>`: with no
+# upstream version to name a release after, the tags encode its absence and let
+# the release counter carry the information. See `../bin/compute-next-tag.sh`.
 redlib_version: latest
 
 redlib_uid: ""
