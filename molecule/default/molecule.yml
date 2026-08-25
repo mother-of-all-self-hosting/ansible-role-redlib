@@ -40,7 +40,10 @@ provisioner:
         # addresses that CI runs from - so the scenario stands a stub in
         # Reddit's place. See molecule/README.md for why, and prepare.yml for
         # how.
-        redlib_molecule_mock_reddit_container: redlib-molecule-mock-reddit
+        # The name carries both the role and the scenario, like the platform
+        # does, so a leftover container can never be mistaken for another
+        # scenario's.
+        redlib_molecule_mock_reddit_container: "{{ inventory_hostname }}-mock-reddit"
         # Pinned even though Renovate does not track it - the shared preset's
         # custom manager only reads defaults/main.yml. A stub that returns one
         # constant string over TLS has nothing to gain from a newer nginx, and
