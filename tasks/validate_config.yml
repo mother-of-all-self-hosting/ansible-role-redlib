@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 Slavi Pantaleev
+# SPDX-FileCopyrightText: 2023, 2026 Slavi Pantaleev
 # SPDX-FileCopyrightText: 2025 Suguru Hirahara
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
@@ -26,11 +26,37 @@
     - redlib_path_prefix
     - redlib_container_network
 
+# The list mirrors the stylesheets in Redlib's `static/themes/` directory, plus
+# the `system` pseudo-theme. Redlib gains themes from time to time, so should
+# this list ever reject a theme that Redlib's own settings page offers, it is
+# this list that is out of date.
 - name: Fail if Redlib default theme is invalid
+  vars:
+    redlib_valid_themes:
+      - system
+      - black
+      - dark
+      - doomone
+      - dracula
+      - gold
+      - gruvboxdark
+      - gruvboxlight
+      - icebergDark
+      - laserwave
+      - libredditBlack
+      - libredditDark
+      - libredditLight
+      - light
+      - midnightPurple
+      - nord
+      - rosebox
+      - tokyoNight
+      - violet
   ansible.builtin.fail:
     msg: >-
-      redlib_environment_variables_redlib_default_theme must be 'system', 'light', 'dark', 'black', 'dracula', 'nord', 'laserwave', 'violet', 'gold', 'rosebox', 'gruvboxdark', or 'gruvboxlight'
-  when: "redlib_environment_variables_redlib_default_theme not in ['system', 'light', 'dark', 'black', 'dracula', 'nord', 'laserwave', 'violet', 'gold', 'rosebox', 'gruvboxdark', 'gruvboxlight']"
+      redlib_environment_variables_redlib_default_theme (`{{ redlib_environment_variables_redlib_default_theme }}`)
+      must be one of: {{ redlib_valid_themes | join(', ') }}
+  when: "redlib_environment_variables_redlib_default_theme not in redlib_valid_themes"
 
 - name: Fail if Redlib default front page is invalid
   ansible.builtin.fail:

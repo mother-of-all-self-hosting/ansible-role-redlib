@@ -235,7 +235,7 @@ redlib_environment_variables_redlib_robots_disable_indexing: "off"
 redlib_environment_variables_redlib_pushshift_frontend: undelete.pullpush.io
 
 # Default user settings
-# Set the default theme (options: system, light, dark, black, dracula, nord, laserwave, violet, gold, rosebox, gruvboxdark, gruvboxlight)
+# Set the default theme (options: system, black, dark, doomone, dracula, gold, gruvboxdark, gruvboxlight, icebergDark, laserwave, libredditBlack, libredditDark, libredditLight, light, midnightPurple, nord, rosebox, tokyoNight, violet)
 redlib_environment_variables_redlib_default_theme: system
 # Set the default front page (options: default, popular, all)
 redlib_environment_variables_redlib_default_front_page: default

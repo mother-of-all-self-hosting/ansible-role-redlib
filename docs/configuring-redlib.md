@@ -71,7 +71,7 @@ redlib_environment_variables_redlib_sfw_only: on
 If you want to set the default theme for users, add and adjust the following configuration to your `vars.yml` file:
 
 ```yaml
-# Valid values: system, light, dark, black, dracula, nord, laserwave, violet, gold, rosebox, gruvboxdark, gruvboxlight
+# Valid values: system, black, dark, doomone, dracula, gold, gruvboxdark, gruvboxlight, icebergDark, laserwave, libredditBlack, libredditDark, libredditLight, light, midnightPurple, nord, rosebox, tokyoNight, violet
 redlib_environment_variables_redlib_default_theme: system
 ```
 
