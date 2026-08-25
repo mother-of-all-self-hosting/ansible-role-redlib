@@ -12,6 +12,7 @@ SPDX-FileCopyrightText: 2023 Antonis Christofides
 SPDX-FileCopyrightText: 2023 Felix Stupp
 SPDX-FileCopyrightText: 2023 Pierre 'McFly' Marty
 SPDX-FileCopyrightText: 2024 - 2025 Suguru Hirahara
+SPDX-FileCopyrightText: 2026 Slavi Pantaleev
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
@@ -121,3 +122,16 @@ If you would like to make your instance public so that it can be used by anyone 
 ### Check the service's logs
 
 You can find the logs in [systemd-journald](https://www.freedesktop.org/software/systemd/man/systemd-journald.service.html) by logging in to the server with SSH and running `journalctl -fu redlib` (or how you/your playbook named the service, e.g. `mash-redlib`).
+
+### The service restarts over and over and never answers
+
+Redlib does not serve a single route until it has obtained an OAuth token from Reddit: it fetches one before it starts listening, and exits after ten failed attempts. Because the systemd service is set to restart, `systemctl status redlib` will report it as `active` the whole time even though nothing is listening — the logs are what tell you what is happening.
+
+Look for lines like these:
+
+```text
+ERROR redlib::oauth > [⛔] Failed to create OAuth client: access_token
+{"error":401,"message":"Unauthorized"}. Retrying in 5 seconds...
+```
+
+They mean Reddit is turning your server away, which it commonly does for addresses belonging to datacenters and hosting providers. There is nothing this role can configure around it; the options are to run Redlib from an address Reddit does not block, or to follow the [upstream project](https://github.com/redlib-org/redlib/issues) for workarounds. A healthy instance logs `Running Redlib v<version> on <address>!` instead, and answers `https://example.com/settings`.
