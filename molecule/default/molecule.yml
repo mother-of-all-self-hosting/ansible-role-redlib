@@ -1,0 +1,107 @@
+# SPDX-FileCopyrightText: 2026 Slavi Pantaleev
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+dependency:
+  name: galaxy
+  options:
+    requirements-file: requirements.yml
+    force: true
+driver:
+  name: docker
+platforms:
+  - name: redlib-${MOLECULE_DISTRO:-ubuntu2604}-default
+    image: "geerlingguy/docker-${MOLECULE_DISTRO:-ubuntu2604}-ansible:latest"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    cgroupns_mode: host
+    privileged: true
+    pre_build_image: true
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      callback_result_format: yaml
+  inventory:
+    group_vars:
+      all:
+        # Helper variables
+        redlib_debug_service_enabled: false
+
+        # The container and network names the role derives from its identifier.
+        # Role defaults are not in scope in every play, so they are spelled out.
+        redlib_molecule_container: redlib
+        redlib_molecule_container_network: redlib
+
+        # Redlib refuses to serve anything at all until it has obtained an
+        # OAuth token from Reddit, and Reddit turns away the datacenter
+        # addresses that CI runs from - so the scenario stands a stub in
+        # Reddit's place. See molecule/README.md for why, and prepare.yml for
+        # how.
+        redlib_molecule_mock_reddit_container: redlib-molecule-mock-reddit
+        # Pinned even though Renovate does not track it - the shared preset's
+        # custom manager only reads defaults/main.yml. A stub that returns one
+        # constant string over TLS has nothing to gain from a newer nginx, and
+        # a pin keeps a CI run from failing for a reason that has nothing to do
+        # with the change under test.
+        redlib_molecule_mock_reddit_image: docker.io/nginx:1.31.4-alpine
+        redlib_molecule_mock_reddit_path: /var/lib/redlib-molecule/mock-reddit
+        # Only the certificate authority certificate goes into the Redlib
+        # container - not the key that signs with it, and not the stub's own
+        # key either.
+        redlib_molecule_ca_path: /var/lib/redlib-molecule/ca
+        redlib_molecule_ca_path_in_container: /mock-reddit
+
+        # Variables for Redlib
+        redlib_uid: 1000
+        redlib_gid: 1000
+        redlib_scheme: http
+        redlib_hostname: localhost
+        redlib_container_labels_traefik_enabled: false
+        redlib_container_http_port: 8080
+        redlib_container_http_host_bind_port: 8080
+
+        # Every one of these is deliberately something other than both the
+        # role's own default and the value an unconfigured Redlib reports.
+        # Redlib reports each setting it was given on /info.json, and reports
+        # `null` for each one it was not, so a value that matched the default
+        # would prove nothing about whether the role's env file arrived.
+        redlib_environment_variables_redlib_sfw_only: "on"
+        redlib_environment_variables_redlib_banner: MASH Molecule Redlib
+        redlib_environment_variables_redlib_robots_disable_indexing: "on"
+        redlib_environment_variables_redlib_pushshift_frontend: undelete.molecule.example.com
+        # A theme that Redlib ships but that the role rejected until the
+        # validation list was brought in line with Redlib's `static/themes/`.
+        redlib_environment_variables_redlib_default_theme: midnightPurple
+        redlib_environment_variables_redlib_default_front_page: popular
+        redlib_environment_variables_redlib_default_layout: compact
+        redlib_environment_variables_redlib_default_wide: "on"
+        redlib_environment_variables_redlib_default_post_sort: top
+        redlib_environment_variables_redlib_default_comment_sort: "new"
+        redlib_environment_variables_redlib_default_blur_nsfw: "on"
+        redlib_environment_variables_redlib_default_hide_score: "on"
+        redlib_environment_variables_redlib_default_subscriptions: mash+molecule
+        redlib_environment_variables_redlib_default_filters: moleculefilter
+
+        # The free-form escape hatch, carrying one setting that the role has no
+        # dedicated variable for (and which Redlib reports on /info.json), plus
+        # the one that points Redlib's TLS trust at the stub's authority.
+        redlib_environment_variables_additional_variables: |
+          REDLIB_ENABLE_RSS=on
+          SSL_CERT_FILE={{ redlib_molecule_ca_path_in_container }}/ca.crt
+
+        # The role declares this variable but did not render it into the
+        # systemd unit until recently, so mounting the authority certificate
+        # through it is also what keeps that from silently regressing.
+        redlib_container_additional_volumes_custom:
+          - type: bind
+            src: "{{ redlib_molecule_ca_path }}"
+            dst: "{{ redlib_molecule_ca_path_in_container }}"
+            options: readonly
+  env:
+    # Workaround for https://github.com/ansible/molecule/issues/4391
+    ANSIBLE_ROLES_PATH: ${MOLECULE_PROJECT_DIRECTORY}/..:/.ansible/roles:/usr/share/ansible/roles:/etc/ansible/roles:~/.ansible/roles
+verifier:
+  name: ansible

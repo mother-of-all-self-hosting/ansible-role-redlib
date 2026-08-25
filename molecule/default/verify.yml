@@ -1,0 +1,401 @@
+# SPDX-FileCopyrightText: 2026 Slavi Pantaleev
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+- name: Verify Redlib
+  hosts: all
+  become: true
+  gather_facts: false
+
+  vars:
+    redlib_verify_url: "http://127.0.0.1:{{ redlib_container_http_host_bind_port }}"
+
+    # The name carries both the role and the scenario, like the platform does,
+    # so a leftover container can never be mistaken for another scenario's.
+    redlib_verify_control_container: "{{ inventory_hostname }}-negative-control"
+    redlib_verify_control_port: 8099
+    redlib_verify_control_url: "http://127.0.0.1:{{ redlib_verify_control_port }}"
+
+    # Every setting the role writes into its env file that Redlib reports back
+    # on /info.json, paired with the value it was given. Redlib reports `null`
+    # for a setting it was never given, which is what the unconfigured instance
+    # further down is checked to report for all of them.
+    redlib_verify_expected_config:
+      REDLIB_SFW_ONLY: "{{ redlib_environment_variables_redlib_sfw_only }}"
+      REDLIB_BANNER: "{{ redlib_environment_variables_redlib_banner }}"
+      REDLIB_ROBOTS_DISABLE_INDEXING: "{{ redlib_environment_variables_redlib_robots_disable_indexing }}"
+      REDLIB_PUSHSHIFT_FRONTEND: "{{ redlib_environment_variables_redlib_pushshift_frontend }}"
+      REDLIB_DEFAULT_THEME: "{{ redlib_environment_variables_redlib_default_theme }}"
+      REDLIB_DEFAULT_FRONT_PAGE: "{{ redlib_environment_variables_redlib_default_front_page }}"
+      REDLIB_DEFAULT_LAYOUT: "{{ redlib_environment_variables_redlib_default_layout }}"
+      REDLIB_DEFAULT_WIDE: "{{ redlib_environment_variables_redlib_default_wide }}"
+      REDLIB_DEFAULT_POST_SORT: "{{ redlib_environment_variables_redlib_default_post_sort }}"
+      REDLIB_DEFAULT_COMMENT_SORT: "{{ redlib_environment_variables_redlib_default_comment_sort }}"
+      REDLIB_DEFAULT_BLUR_NSFW: "{{ redlib_environment_variables_redlib_default_blur_nsfw }}"
+      REDLIB_DEFAULT_HIDE_SCORE: "{{ redlib_environment_variables_redlib_default_hide_score }}"
+      REDLIB_DEFAULT_SUBSCRIPTIONS: "{{ redlib_environment_variables_redlib_default_subscriptions }}"
+      REDLIB_DEFAULT_FILTERS: "{{ redlib_environment_variables_redlib_default_filters }}"
+      # Not a variable of its own - this one rides in through
+      # `redlib_environment_variables_additional_variables`, which is a
+      # different path through the template than all of the above.
+      REDLIB_ENABLE_RSS: "on"
+
+    # The two robots.txt bodies Redlib compiles in, one for each value of
+    # `REDLIB_ROBOTS_DISABLE_INDEXING`.
+    redlib_verify_robots_indexable:
+      - "User-agent: *"
+      - "Disallow: /u/"
+      - "Disallow: /user/"
+    redlib_verify_robots_unindexable:
+      - "User-agent: *"
+      - "Disallow: /"
+
+  tasks:
+    # Role defaults are not in scope in a verify play, but the version the role
+    # installs lives in them and is what the running container is checked
+    # against below. Only leaf literals may be read out of this - anything
+    # Jinja-derived would be resolved against an empty namespace. Loading it
+    # under a name of its own also keeps it from outranking the scenario's own
+    # group_vars, which is what the assertions further down compare against.
+    - name: Load the Redlib role defaults
+      ansible.builtin.include_vars:
+        file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
+        name: redlib_defaults
+
+    # ------------------------------------------------------------------
+    # The unit is up
+    # ------------------------------------------------------------------
+
+    - name: Wait for the Redlib systemd service to become active (up to 180s)
+      ansible.builtin.systemd_service:
+        name: redlib.service
+      register: redlib_service
+      until: redlib_service.status.ActiveState == 'active'
+      retries: 36
+      delay: 5
+
+    - name: Assert the Redlib systemd service is active
+      ansible.builtin.assert:
+        that: redlib_service.status.ActiveState == 'active'
+        fail_msg: "The Redlib systemd service is {{ redlib_service.status.ActiveState }}"
+        success_msg: "The Redlib systemd service is active"
+
+    - name: Retrieve the service logs for debugging
+      when: redlib_debug_service_enabled | bool
+      ansible.builtin.command:
+        cmd: journalctl -xeu redlib.service
+      changed_when: false
+
+    - name: Read the Redlib container the role created
+      ansible.builtin.command:
+        cmd: "docker inspect {{ redlib_molecule_container }}"
+      register: redlib_container_raw
+      changed_when: false
+
+    - name: Make sense of the Redlib container
+      ansible.builtin.set_fact:
+        redlib_container: "{{ (redlib_container_raw.stdout | from_json)[0] }}"
+
+    # ------------------------------------------------------------------
+    # The negative control: the same image, without the role's doing
+    # ------------------------------------------------------------------
+
+    # Redlib is a Reddit frontend, so nothing here may depend on Reddit
+    # answering - and in fact nothing here depends on Reddit existing, because
+    # the scenario stands a stub in its place (see prepare.yml). What is checked
+    # instead is what the role configured, and that is only evidence if the
+    # stock image does not report the same things unaided.
+    #
+    # The control gets exactly two things: the stub's certificate authority, and
+    # the environment variable pointing at it. Without those it would not serve
+    # anything at all and there would be nothing to compare against. Neither is
+    # one of the REDLIB_* settings whose arrival is being checked.
+    - name: Probe a Redlib that the role has not configured
+      block:
+        - name: Start a Redlib with none of the role's configuration
+          ansible.builtin.command:
+            argv:
+              - docker
+              - run
+              - --detach
+              - --rm
+              - --name
+              - "{{ redlib_verify_control_container }}"
+              - --network
+              - "{{ redlib_molecule_container_network }}"
+              - --publish
+              - "127.0.0.1:{{ redlib_verify_control_port }}:{{ redlib_container_http_port }}"
+              - --env
+              - "SSL_CERT_FILE={{ redlib_molecule_ca_path_in_container }}/ca.crt"
+              - --volume
+              - "{{ redlib_molecule_ca_path }}:{{ redlib_molecule_ca_path_in_container }}:ro"
+              - "{{ redlib_container.Config.Image }}"
+          changed_when: true
+
+        - name: Wait for the unconfigured Redlib to come up (up to 3m)
+          ansible.builtin.uri:
+            url: "{{ redlib_verify_control_url }}/info.json"
+            status_code: [200, -1]
+          register: redlib_control_info
+          until: redlib_control_info.status == 200
+          retries: 36
+          delay: 5
+
+        - name: Ask the unconfigured Redlib for its robots.txt
+          ansible.builtin.uri:
+            url: "{{ redlib_verify_control_url }}/robots.txt"
+            return_content: true
+            follow_redirects: none
+            status_code: [200]
+          register: redlib_control_robots
+
+        - name: Ask the unconfigured Redlib for its settings page
+          ansible.builtin.uri:
+            url: "{{ redlib_verify_control_url }}/settings"
+            return_content: true
+            follow_redirects: none
+            status_code: [200]
+          register: redlib_control_settings
+      always:
+        - name: Stop the unconfigured Redlib
+          ansible.builtin.command:
+            argv:
+              - docker
+              - rm
+              - --force
+              - "{{ redlib_verify_control_container }}"
+          changed_when: true
+
+    - name: Assert the unconfigured Redlib reports none of what the role configures
+      ansible.builtin.assert:
+        that:
+          - redlib_control_info.json.config.values() | select('string') | list == []
+          - redlib_control_robots.content.splitlines() == redlib_verify_robots_indexable
+          - "'<option value=\"' ~ redlib_environment_variables_redlib_default_theme ~ '\" selected>' not in redlib_control_settings.content"
+          - "'<option value=\"' ~ redlib_environment_variables_redlib_default_front_page ~ '\" selected>' not in redlib_control_settings.content"
+        fail_msg: >-
+          The unconfigured Redlib already reports what this role is supposed to
+          configure, so nothing below can be credited to the role:
+          config={{ redlib_control_info.json.config }},
+          robots.txt={{ redlib_control_robots.content | trim }}
+        success_msg: >-
+          The unconfigured Redlib reports every setting as unset, serves the
+          permissive robots.txt and preselects neither the theme nor the front
+          page the role configures - so everything below is the role's doing
+
+    # ------------------------------------------------------------------
+    # The role's Redlib is up
+    # ------------------------------------------------------------------
+
+    - name: Wait for Redlib to answer (up to 3m)
+      ansible.builtin.uri:
+        url: "{{ redlib_verify_url }}/info.json"
+        status_code: [200, -1]
+      register: redlib_info
+      until: redlib_info.status == 200
+      retries: 36
+      delay: 5
+
+    # ------------------------------------------------------------------
+    # Configuration reaches the process, not just the files on disk
+    # ------------------------------------------------------------------
+
+    # /info.json is Redlib reporting the configuration it actually resolved, so
+    # a value here has been through the env file, through `--env-file`, and
+    # through Redlib's own parsing. The role's own defaults would not do as
+    # expectations: they are what the unconfigured image reports too.
+    - name: Assert the env file the role wrote reached the running Redlib
+      ansible.builtin.assert:
+        that:
+          - redlib_info.json.config[item.key] == item.value
+        fail_msg: >-
+          Redlib reports {{ item.key }}={{ redlib_info.json.config[item.key] | default('<absent>') }},
+          but the role configured {{ item.value }}
+        success_msg: "Redlib reports {{ item.key }}={{ item.value }}, as the role configured"
+      loop: "{{ redlib_verify_expected_config | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+
+    # A second, entirely separate surface for the same env file: this route is
+    # rendered from `REDLIB_ROBOTS_DISABLE_INDEXING` at request time rather than
+    # reported out of the parsed configuration.
+    - name: Retrieve the Redlib robots.txt
+      ansible.builtin.uri:
+        url: "{{ redlib_verify_url }}/robots.txt"
+        return_content: true
+        follow_redirects: none
+        status_code: [200]
+      register: redlib_robots
+
+    - name: Assert Redlib serves the robots.txt that the role asked for
+      ansible.builtin.assert:
+        that:
+          - redlib_robots.content.splitlines() == redlib_verify_robots_unindexable
+        fail_msg: >-
+          Redlib is not disallowing indexing even though
+          REDLIB_ROBOTS_DISABLE_INDEXING is
+          {{ redlib_environment_variables_redlib_robots_disable_indexing }}:
+          {{ redlib_robots.content | trim }}
+        success_msg: "Redlib serves a robots.txt that disallows indexing outright"
+
+    # And a third: the settings page renders the instance defaults as the
+    # preselected options a first-time visitor would see.
+    - name: Retrieve the Redlib settings page
+      ansible.builtin.uri:
+        url: "{{ redlib_verify_url }}/settings"
+        return_content: true
+        follow_redirects: none
+        status_code: [200]
+      register: redlib_settings
+
+    - name: Assert the Redlib settings page offers the role's defaults
+      ansible.builtin.assert:
+        that:
+          - "'<option value=\"' ~ redlib_environment_variables_redlib_default_theme ~ '\" selected>' in redlib_settings.content"
+          - "'<option value=\"' ~ redlib_environment_variables_redlib_default_front_page ~ '\" selected>' in redlib_settings.content"
+          - "'<option value=\"' ~ redlib_environment_variables_redlib_default_layout ~ '\" selected>' in redlib_settings.content"
+        fail_msg: >-
+          The settings page does not preselect the role's defaults
+          (theme {{ redlib_environment_variables_redlib_default_theme }},
+          front page {{ redlib_environment_variables_redlib_default_front_page }},
+          layout {{ redlib_environment_variables_redlib_default_layout }})
+        success_msg: >-
+          The settings page preselects the theme, front page and layout the role
+          configured - including a theme that the role's own validation rejected
+          until its list was brought in line with the themes Redlib ships
+
+    # ------------------------------------------------------------------
+    # The container runs the version its leaf variable names
+    # ------------------------------------------------------------------
+
+    # `redlib_version` is the literal `latest` and will stay that way for as
+    # long as Redlib publishes no versioned images (see defaults/main.yml), so
+    # the tag is all the leaf variable can be checked against.
+    #
+    # `latest` moves, so two more links are checked: that the container was
+    # created from the image that tag points at right now (and not a stale one
+    # left over from an earlier pull), and that the version the running process
+    # reports is the one that image's own binary reports. The image's
+    # `org.opencontainers.image.version` label is deliberately not used - Redlib
+    # builds it from the moving tag, so it reads `latest` too.
+    - name: Read the image the Redlib container runs
+      ansible.builtin.command:
+        cmd: "docker image inspect {{ redlib_container.Config.Image }} --format {{ '{{.Id}}' }}"
+      register: redlib_image_id
+      changed_when: false
+
+    - name: Ask that image's own binary which version it is
+      ansible.builtin.command:
+        cmd: "docker run --rm {{ redlib_container.Config.Image }} redlib --version"
+      register: redlib_image_version
+      changed_when: false
+
+    - name: Assert the Redlib container runs the version the role names
+      vars:
+        redlib_image_crate_version: "{{ redlib_image_version.stdout | trim | split(' ') | last }}"
+      ansible.builtin.assert:
+        that:
+          - redlib_container.Config.Image | split(':') | last == redlib_defaults.redlib_version
+          - redlib_container.Image == redlib_image_id.stdout | trim
+          - redlib_info.json.crate_version == redlib_image_crate_version
+        fail_msg: >-
+          The running Redlib does not match what the role installs: container
+          image {{ redlib_container.Config.Image }} (expected the
+          `{{ redlib_defaults.redlib_version }}` tag), created from
+          {{ redlib_container.Image }} while that tag now points at
+          {{ redlib_image_id.stdout | trim }}, process reports
+          {{ redlib_info.json.crate_version }} while the image's binary reports
+          {{ redlib_image_crate_version }}
+        success_msg: >-
+          The container runs {{ redlib_container.Config.Image }}, the tag
+          `redlib_version` names, it was created from the image that tag points
+          at, and the process inside it reports itself as Redlib
+          {{ redlib_info.json.crate_version }} - the version that image's own
+          binary reports
+
+    # ------------------------------------------------------------------
+    # The container is shaped the way the role's unit file says
+    # ------------------------------------------------------------------
+
+    - name: Assert the Redlib container is hardened and wired up as the role specifies
+      vars:
+        redlib_verify_ca_mount: >-
+          {{
+            redlib_container.Mounts
+            | selectattr('Destination', 'eq', redlib_molecule_ca_path_in_container)
+            | list
+          }}
+      ansible.builtin.assert:
+        that:
+          - redlib_container.HostConfig.ReadonlyRootfs
+          - redlib_container.HostConfig.CapDrop == ['ALL']
+          - redlib_container.Config.User == redlib_uid ~ ':' ~ redlib_gid
+          - redlib_container.NetworkSettings.Networks.keys() | list == [redlib_molecule_container_network]
+          # `redlib_container_additional_volumes` was declared by the role but
+          # never rendered into the unit file, so this is what keeps the mount
+          # the scenario depends on from silently disappearing again.
+          - redlib_verify_ca_mount | length == 1
+          - redlib_verify_ca_mount[0].Source == redlib_molecule_ca_path
+          - not redlib_verify_ca_mount[0].RW
+        fail_msg: >-
+          The Redlib container is not shaped as the unit file specifies:
+          read-only rootfs={{ redlib_container.HostConfig.ReadonlyRootfs }},
+          dropped capabilities={{ redlib_container.HostConfig.CapDrop }},
+          user={{ redlib_container.Config.User }},
+          networks={{ redlib_container.NetworkSettings.Networks.keys() | list }},
+          mounts={{ redlib_container.Mounts }}
+        success_msg: >-
+          The Redlib container runs read-only as
+          {{ redlib_container.Config.User }} with all capabilities dropped, on
+          the {{ redlib_molecule_container_network }} network, with the role's
+          additional volume mounted read-only at
+          {{ redlib_molecule_ca_path_in_container }}
+
+    # ------------------------------------------------------------------
+    # Nothing was quietly restarting while all of that was being checked
+    # ------------------------------------------------------------------
+
+    # `Restart=always` means the unit reads `active` while it is crash-looping,
+    # and a crash loop is exactly what a Redlib that cannot get a token settles
+    # into - it exits with status 1 after ten failed attempts. So `active` on
+    # its own says very little here, and the window has to be watched with
+    # everything already answering.
+    - name: Sample the restart counter
+      ansible.builtin.systemd_service:
+        name: redlib.service
+      register: redlib_restarts_before
+
+    # Comfortably longer than the unit's `RestartSec=30`, so a crash loop has to
+    # tick at least once inside the window.
+    - name: Watch the service for 45 seconds
+      ansible.builtin.pause:
+        seconds: 45
+
+    - name: Sample the restart counter again
+      ansible.builtin.systemd_service:
+        name: redlib.service
+      register: redlib_restarts_after
+
+    - name: Assert Redlib did not restart while it was up
+      ansible.builtin.assert:
+        that: redlib_restarts_after.status.NRestarts == redlib_restarts_before.status.NRestarts
+        fail_msg: >-
+          Redlib restarted while it was supposedly up, so `active` was hiding a
+          crash loop (restarts went from
+          {{ redlib_restarts_before.status.NRestarts }} to
+          {{ redlib_restarts_after.status.NRestarts }})
+        success_msg: >-
+          Redlib did not restart over 45 seconds of watching (restarts so far:
+          {{ redlib_restarts_after.status.NRestarts }})
+
+    - name: Show the Redlib verification summary
+      ansible.builtin.debug:
+        msg:
+          - "systemd: redlib.service is {{ redlib_service.status.ActiveState }}"
+          - "unconfigured image: config={{ redlib_control_info.json.config }}"
+          - "configured: {{ redlib_info.json.config }}"
+          - "robots.txt: {{ redlib_robots.content | trim }}"
+          - "image: {{ redlib_container.Config.Image }} ({{ redlib_container.Image }}), process reports {{ redlib_info.json.crate_version }}"
+          - "container: read-only={{ redlib_container.HostConfig.ReadonlyRootfs }}, user={{ redlib_container.Config.User }}, capabilities dropped={{ redlib_container.HostConfig.CapDrop }}"
+          - "restarts: {{ redlib_restarts_after.status.NRestarts }}"

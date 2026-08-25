@@ -1,0 +1,76 @@
+# SPDX-FileCopyrightText: 2026 Slavi Pantaleev
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+- name: Include roles for Redlib Molecule tests
+  hosts: all
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Include roles for Redlib Molecule tests
+      ansible.builtin.include_role:
+        name: "{{ role_name }}"
+        public: true
+      loop:
+        - com.devture.ansible.role.playbook_help
+        - com.devture.ansible.role.systemd_docker_base
+        - "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
+      loop_control:
+        loop_var: role_name
+
+# The stub joins the container network that the role creates, so it can only be
+# started once the role has run. It is deliberately not started before Redlib
+# is: Redlib gives up and exits after ten failed token requests, and while the
+# unit would keep restarting it, waiting out those restarts wastes minutes.
+- name: Ensure the Reddit stub is running
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Check whether the Reddit stub is already running
+      ansible.builtin.command:
+        argv:
+          - docker
+          - container
+          - inspect
+          - "{{ redlib_molecule_mock_reddit_container }}"
+      register: redlib_molecule_mock_reddit_state
+      changed_when: false
+      failed_when: false
+
+    - name: Ensure the Reddit stub container is started
+      when: redlib_molecule_mock_reddit_state.rc != 0
+      ansible.builtin.command:
+        argv:
+          - docker
+          - run
+          - --detach
+          - --name
+          - "{{ redlib_molecule_mock_reddit_container }}"
+          - --network
+          - "{{ redlib_molecule_container_network }}"
+          # What makes Docker's embedded resolver hand this container's address
+          # to anything on the network that looks up www.reddit.com.
+          - --network-alias
+          - www.reddit.com
+          - --volume
+          - "{{ redlib_molecule_mock_reddit_path }}/nginx.conf:/etc/nginx/nginx.conf:ro"
+          - --volume
+          - "{{ redlib_molecule_mock_reddit_path }}:/stub:ro"
+          - "{{ redlib_molecule_mock_reddit_image }}"
+      changed_when: true
+
+- name: Ensure services are started
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Ensure systemd daemon is reloaded
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+
+    - name: Ensure Redlib systemd service is started
+      ansible.builtin.systemd_service:
+        name: redlib.service
+        state: started
