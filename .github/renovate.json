@@ -7,6 +7,6 @@
     "Should Redlib ever start publishing versioned images and this role pin one, revisit: Redlib is stateless - it keeps no database and writes nothing, and the role runs it with a read-only root filesystem - so a patch bump carries no migration risk, and the Molecule `default` scenario does run the image the role names and read its version back out of the running process. The evidence for automerging patch bumps would be there."
   ],
   "extends": [
-    "github>mother-of-all-self-hosting/renovate-config#v1.0.0"
+    "github>mother-of-all-self-hosting/renovate-config#v1.1.0"
   ]
 }
