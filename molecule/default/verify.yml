@@ -389,10 +389,10 @@
     - name: Show the Redlib verification summary
       ansible.builtin.debug:
         msg:
-          - "systemd: redlib.service is {{ redlib_service.status.ActiveState }}"
-          - "unconfigured image: config={{ redlib_control_info.json.config }}"
-          - "configured: {{ redlib_info.json.config }}"
-          - "robots.txt: {{ redlib_robots.content | trim }}"
-          - "image: {{ redlib_container.Config.Image }} ({{ redlib_container.Image }}), process reports {{ redlib_info.json.crate_version }}"
-          - "container: read-only={{ redlib_container.HostConfig.ReadonlyRootfs }}, user={{ redlib_container.Config.User }}, capabilities dropped={{ redlib_container.HostConfig.CapDrop }}"
-          - "restarts: {{ redlib_restarts_after.status.NRestarts }}"
+          - "Redlib systemd: {{ redlib_service.status.ActiveState }}"
+          - "Redlib unconfigured image: config={{ redlib_control_info.json.config }}"
+          - "Redlib configured: {{ redlib_info.json.config }}"
+          - "Redlib robots.txt: {{ redlib_robots.content | trim }}"
+          - "Redlib image: {{ redlib_container.Config.Image }} ({{ redlib_container.Image }}), process reports {{ redlib_info.json.crate_version }}"
+          - "Redlib container: read-only={{ redlib_container.HostConfig.ReadonlyRootfs }}, user={{ redlib_container.Config.User }}, capabilities dropped={{ redlib_container.HostConfig.CapDrop }}"
+          - "Redlib restarts: {{ redlib_restarts_after.status.NRestarts }}"
