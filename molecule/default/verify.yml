@@ -71,14 +71,20 @@
       until: redlib_service.status.ActiveState == 'active'
       retries: 36
       delay: 5
+      # So that giving up is reported by the assertion below rather than as a
+      # wall of systemd unit properties.
+      failed_when: false
 
+    # `Restart=always` in the systemd unit means that even a container which crashes
+    # and gets restarted reads as active here, so this is a precondition rather than
+    # a result.
     - name: Assert the Redlib systemd service is active
       ansible.builtin.assert:
         that: redlib_service.status.ActiveState == 'active'
-        fail_msg: "The Redlib systemd service is {{ redlib_service.status.ActiveState }}"
-        success_msg: "The Redlib systemd service is active"
+        fail_msg: "redlib.service is not active ({{ redlib_service.status.ActiveState }})"
+        success_msg: "redlib.service is active"
 
-    - name: Retrieve the service logs for debugging
+    - name: Retrieve the Redlib systemd service log for debugging
       when: redlib_debug_service_enabled | bool
       ansible.builtin.command:
         cmd: journalctl -xeu redlib.service
