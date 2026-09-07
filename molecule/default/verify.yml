@@ -282,7 +282,7 @@
       register: redlib_image_id
       changed_when: false
 
-    - name: Ask that image's own binary which version it is
+    - name: Query the version of the running Redlib
       ansible.builtin.command:
         cmd: "docker run --rm {{ redlib_container.Config.Image }} redlib --version"
       register: redlib_image_version
