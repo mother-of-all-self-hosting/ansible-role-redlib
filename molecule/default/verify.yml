@@ -84,13 +84,13 @@
         cmd: journalctl -xeu redlib.service
       changed_when: false
 
-    - name: Read the Redlib container the role created
+    - name: Inspect Redlib container
       ansible.builtin.command:
         cmd: "docker container inspect {{ redlib_molecule_container }}"
       register: redlib_container_raw
       changed_when: false
 
-    - name: Make sense of the Redlib container
+    - name: Parse the Redlib container definition
       ansible.builtin.set_fact:
         redlib_container: "{{ (redlib_container_raw.stdout | from_json)[0] }}"
 
