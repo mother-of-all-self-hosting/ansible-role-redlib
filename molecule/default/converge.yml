@@ -41,7 +41,7 @@
         argv:
           - docker
           - run
-          - --detach
+          - -d
           - --name
           - "{{ redlib_molecule_mock_reddit_container }}"
           - --network

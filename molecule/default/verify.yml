@@ -121,7 +121,7 @@
             argv:
               - docker
               - run
-              - --detach
+              - -d
               - --rm
               - --name
               - "{{ redlib_verify_control_container }}"
