@@ -87,7 +87,7 @@
     - name: Retrieve the Redlib systemd service log for debugging
       when: redlib_debug_service_enabled | bool
       ansible.builtin.command:
-        cmd: journalctl -xeu redlib.service
+        cmd: journalctl --no-pager --output=cat --unit=redlib.service
       changed_when: false
 
     - name: Inspect Redlib container
