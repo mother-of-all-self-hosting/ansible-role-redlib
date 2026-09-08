@@ -30,11 +30,7 @@
   tasks:
     - name: Check whether the Reddit stub is already running
       ansible.builtin.command:
-        argv:
-          - docker
-          - container
-          - inspect
-          - "{{ redlib_molecule_mock_reddit_container }}"
+        cmd: docker container inspect {{ redlib_molecule_mock_reddit_container }}
       register: redlib_molecule_mock_reddit_state
       changed_when: false
       failed_when: false

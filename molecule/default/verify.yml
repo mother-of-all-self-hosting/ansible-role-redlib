@@ -163,11 +163,7 @@
       always:
         - name: Stop the unconfigured Redlib
           ansible.builtin.command:
-            argv:
-              - docker
-              - rm
-              - --force
-              - "{{ redlib_verify_control_container }}"
+            cmd: docker rm --force {{ redlib_verify_control_container }}
           changed_when: true
 
     - name: Assert the unconfigured Redlib reports none of what the role configures
