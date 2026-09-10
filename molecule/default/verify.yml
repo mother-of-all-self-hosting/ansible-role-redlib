@@ -52,6 +52,8 @@
       - "Disallow: /"
 
   tasks:
+    - name: Verify that Redlib works
+      block:
     # The role is not included in this playbook, so its defaults are not in
     # scope. Reading defaults/main.yml directly ties the version assertion
     # below.
@@ -398,3 +400,19 @@
           - "Redlib image: {{ redlib_container.Config.Image }} ({{ redlib_container.Image }}), process reports {{ redlib_info.json.crate_version }}"
           - "Redlib container: read-only={{ redlib_container.HostConfig.ReadonlyRootfs }}, user={{ redlib_container.Config.User }}, capabilities dropped={{ redlib_container.HostConfig.CapDrop }}"
           - "Redlib restarts: {{ redlib_restarts_after.status.NRestarts }}"
+
+      rescue:
+        # Whatever went wrong, the reason is almost always in the systemd service log.
+        - name: Retrieve the Redlib systemd service log
+          ansible.builtin.command:
+            cmd: journalctl --no-pager --output=cat --unit=redlib.service
+          register: redlib_service_log
+          changed_when: false
+
+        - name: Show the Redlib systemd service log
+          ansible.builtin.debug:
+            var: redlib_service_log.stdout_lines
+
+        - name: Fail because verification did not pass
+          ansible.builtin.fail:
+            msg: "Redlib verification failed. The systemd service log is printed above."
