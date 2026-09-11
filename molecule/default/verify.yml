@@ -51,6 +51,9 @@
       - "User-agent: *"
       - "Disallow: /"
 
+    redlib_verify_units:
+      - redlib.service
+
   tasks:
     - name: Verify that Redlib works
       block:
@@ -66,13 +69,14 @@
         # The unit is up
         # ------------------------------------------------------------------
 
-        - name: Wait for the Redlib systemd service to become active (up to 180s)
+        - name: Wait for the Redlib systemd services to become active (up to 180s each)
           ansible.builtin.systemd_service:
-            name: redlib.service
-          register: redlib_service
-          until: redlib_service.status.ActiveState == 'active'
+            name: "{{ item }}"
+          register: redlib_services
+          until: redlib_services.status.ActiveState == 'active'
           retries: 36
           delay: 5
+          loop: "{{ redlib_verify_units }}"
           # So that giving up is reported by the assertion below rather than as a
           # wall of systemd unit properties.
           failed_when: false
@@ -80,17 +84,20 @@
         # `Restart=always` in the systemd unit means that even a container which crashes
         # and gets restarted reads as active here, so this is a precondition rather than
         # a result.
-        - name: Assert the Redlib systemd service is active
+        - name: Assert the Redlib systemd services are active
           ansible.builtin.assert:
-            that: redlib_service.status.ActiveState == 'active'
-            fail_msg: "redlib.service is not active ({{ redlib_service.status.ActiveState }})"
-            success_msg: "redlib.service is active"
+            that: redlib_services.results | map(attribute='status.ActiveState') | unique | list == ['active']
+            fail_msg: >-
+              Not every service is active:
+              {{ dict(redlib_verify_units | zip(redlib_services.results | map(attribute='status.ActiveState'))) }}
+            success_msg: "Every systemd service is active"
 
-        - name: Retrieve the Redlib systemd service log for debugging
+        - name: Retrieve the Redlib systemd services log for debugging
           when: redlib_debug_service_enabled | bool
           ansible.builtin.command:
-            cmd: journalctl --no-pager --output=cat --unit=redlib.service
+            cmd: "journalctl --no-pager --output=cat --unit={{ item }}"
           changed_when: false
+          loop: "{{ redlib_verify_units }}"
 
         - name: Inspect Redlib container
           ansible.builtin.command:
@@ -393,7 +400,7 @@
         - name: Show the Redlib verification summary
           ansible.builtin.debug:
             msg:
-              - "Redlib systemd: {{ redlib_service.status.ActiveState }}"
+              - "Redlib systemd: {% for unit, state in redlib_verify_units | zip(redlib_services.results | map(attribute='status.ActiveState')) %}{{ unit }} ({{ state }}){% if not loop.last %}, {% endif %}{% endfor %}"
               - "Redlib unconfigured image: config={{ redlib_control_info.json.config }}"
               - "Redlib configured: {{ redlib_info.json.config }}"
               - "Redlib robots.txt: {{ redlib_robots.content | trim }}"
