@@ -97,7 +97,7 @@ Take a look at:
 
 - [`defaults/main.yml`](../defaults/main.yml) for some variables that you can customize via your `vars.yml` file. You can override settings (even those that don't have dedicated playbook variables) using the `redlib_environment_variables_additional_variables` variable
 
-See [`.env.example`](https://github.com/redlib-org/redlib/blob/main/.env.example) for a complete list of Redlib's config options that you can put in `redlib_environment_variables_additional_variables`.
+Refer to [`.env.example`](https://github.com/redlib-org/redlib/blob/main/.env.example) for a complete list of Redlib's config options that you can put in `redlib_environment_variables_additional_variables`.
 
 ## Installing
 
@@ -115,7 +115,7 @@ After running the command for installation, Redlib becomes available at the spec
 
 [Libredirect](https://libredirect.github.io/), an extension for Firefox and Chromium-based desktop browsers, has support for redirections to Redlib.
 
-If you would like to make your instance public so that it can be used by anyone including Libredirect, please consider to send a PR to the [upstream project](https://github.com/redlib-org/redlib-instances) to add yours to the list, which Libredirect automatically fetches using a script (see [this FAQ entry](https://libredirect.github.io/faq.html#where_the_hell_are_those_instances_coming_from)). See [this official documentation](https://github.com/redlib-org/redlib-instances/blob/main/README.md) for details about how to do so.
+If you would like to make your instance public so that it can be used by anyone including Libredirect, please consider to send a PR to the [upstream project](https://github.com/redlib-org/redlib-instances) to add yours to the list, which Libredirect automatically fetches using a script (refer to [this FAQ entry](https://libredirect.github.io/faq.html#where_the_hell_are_those_instances_coming_from)). Refer to [this official documentation](https://github.com/redlib-org/redlib-instances/blob/main/README.md) for details about how to do so.
 
 ## Troubleshooting
 
