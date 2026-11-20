@@ -22,9 +22,6 @@
   with_items:
     - redlib_uid
     - redlib_gid
-    - redlib_hostname
-    - redlib_path_prefix
-    - redlib_container_network
 
 # The list mirrors the stylesheets in Redlib's `static/themes/` directory, plus
 # the `system` pseudo-theme. Redlib gains themes from time to time, so should
